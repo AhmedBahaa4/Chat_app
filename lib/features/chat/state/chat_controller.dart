@@ -37,8 +37,13 @@ class ChatController extends AutoDisposeFamilyAsyncNotifier<ChatState, String> {
     );
 
     try {
+      var hasAssistantResponse = false;
       await for (final assistantMessage in stream) {
+        hasAssistantResponse = true;
         _upsertAssistantMessage(assistantMessage);
+      }
+      if (!hasAssistantResponse) {
+        await _appendAssistantEmptyResponse(conversationId: conversationId);
       }
       _setSending(false);
     } catch (error) {
@@ -91,6 +96,20 @@ class ChatController extends AutoDisposeFamilyAsyncNotifier<ChatState, String> {
     );
     state = AsyncData(
       current.copyWith(messages: [...current.messages, errorMessage]),
+    );
+  }
+
+  Future<void> _appendAssistantEmptyResponse({
+    required String conversationId,
+  }) async {
+    final current = state.value ?? ChatState.initial();
+    final message = _messageFactory.createAssistantEmptyResponseMessage();
+    await _repo.appendMessage(
+      conversationId: conversationId,
+      message: message,
+    );
+    state = AsyncData(
+      current.copyWith(messages: [...current.messages, message]),
     );
   }
 

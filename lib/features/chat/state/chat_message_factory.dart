@@ -7,6 +7,8 @@ class ChatMessageFactory {
   static const String defaultImagePrompt = 'Describe this image';
   static const String connectionErrorMessage =
       'Connection failed. Check GEMINI_API_KEY and internet access.';
+  static const String emptyResponseMessage =
+      'Gemini returned an empty response. Please try again.';
 
   Message? createUserMessage(String text, MessageAttachment? attachment) {
     final trimmed = text.trim();
@@ -30,6 +32,17 @@ class ChatMessageFactory {
       id: now.microsecondsSinceEpoch.toString(),
       role: MessageRole.assistant,
       content: errorText,
+      createdAt: now,
+      status: MessageStatus.failed,
+    );
+  }
+
+  Message createAssistantEmptyResponseMessage() {
+    final now = DateTime.now();
+    return Message(
+      id: now.microsecondsSinceEpoch.toString(),
+      role: MessageRole.assistant,
+      content: emptyResponseMessage,
       createdAt: now,
       status: MessageStatus.failed,
     );
